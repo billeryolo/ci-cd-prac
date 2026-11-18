@@ -1,0 +1,25 @@
+name: CI/CD
+
+on:
+  pull_request: 
+    branches: [dev, main]
+  push: 
+    branches: [dev,main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - run: pytest
+  deploy:
+    needs: test
+    if: github.event_name == "push"
+    runs-on: ubuntu-latest
+    environment: ${{ github.ref_name == 'main' && 'production' || 'development' }}
+    steps:
+      - run: echo "Deploying commit ${{ github.sha }} to ${{ vars.TARGET }}"
